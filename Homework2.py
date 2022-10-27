@@ -27,7 +27,7 @@ epsilon_start = 0   #initial beta value that we will change
 for modes in range(5):
 
    epsilon = epsilon_start
-   depsilon = 2
+   depsilon = 1
 
    for j in range(1000):
       #solve the ivp
@@ -44,10 +44,13 @@ for modes in range(5):
       else:
          epsilon = epsilon - (depsilon / 2)
          depsilon = depsilon / 2
-         
+   
    epsilon_start = epsilon + 0.1
 
    norm = np.sqrt(np.trapz(np.multiply(y_sol, y_sol), sol.t))
    plt.plot(sol.t, sol.y[0, :] / norm, linewidth=3)
 
 plt.show()
+
+#the second for loop is not breaking and printing the eigenvalues when L = 6
+#this means that the y_sols are not within the required error for the problem
