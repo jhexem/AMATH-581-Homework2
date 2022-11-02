@@ -45,7 +45,7 @@ def shooting_method(L, K, xspan, y0, rhsfunc):  #returns the eigenvalues and the
 
       norm = np.sqrt(np.trapz(np.multiply(y_sol, y_sol), sol.t))    #calculates the norm of phi
       func = y_sol / norm
-      #plt.plot(sol.t, y_sol / norm, linewidth=3)   #plots the normalized eigenfunction
+      #plt.plot(sol.t, func, linewidth=3)   #plots the normalized eigenfunction
       
       eigenfunctions[modes] = np.abs(func)   #creates the array of the absolute value of the eigenfunctions
 
@@ -54,6 +54,7 @@ def shooting_method(L, K, xspan, y0, rhsfunc):  #returns the eigenvalues and the
    return eigenvalues, eigenfunctions
 
 solshoot = shooting_method(L, K, xspan, y0, rhsfunc)
+#plt.show()   #shows the plot of the eigefunctions
 
 A1 = np.transpose(np.array([solshoot[1][0, :]]))   #formats each eigenfunction into a column vector
 A2 = np.transpose(np.array([solshoot[1][1, :]]))
@@ -62,8 +63,6 @@ A4 = np.transpose(np.array([solshoot[1][3, :]]))
 A5 = np.transpose(np.array([solshoot[1][4, :]]))
 
 A6 = solshoot[0]
-
-#plt.show()   #shows the plot of the eigefunctions
 
 def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
    dx = (L * 2) / (20 * L + 1)   #calculate dx
@@ -158,6 +157,7 @@ def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):
       depsilon = 0.5
       
       for j in range(1000):   #for loop for shooting
+         y0[0] = A
          sol = scipy.integrate.solve_ivp(lambda x, phi: rhsfunc3(x, phi, K, epsilon, gamma), xspan, y0, t_eval=xevals)   #solves the ODE
          y_sol = sol.y[0, :]
          
@@ -197,5 +197,8 @@ def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):
    return eigenvalues, eigenfunctions
 
 solshoot3 = shooting_method3(L, K, xspan, y0, gamma, rhsfunc3)
+
+#problems: the loop is not breaking and giving the eigenvalues and when gamma = -0.05 we have two eigenfunctions with the same number of peaks and troughs
+
 print(solshoot3[0])
 plt.show()
