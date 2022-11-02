@@ -82,11 +82,38 @@ def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
    A[0, 1] = 2 / (3 * (dx ** 2))   #edit the other values that were affected by using the forward and backward difference schemes
    A[-1, -2] = 2 / (3 * (dx ** 2))
    
-   return np.linalg.eig(A)   #return the eigenvectors and eigenfuntions of A
+   eigenvals, eigenfuncs = np.linalg.eig(A)   #obtain the eigenvectors and eigenfuntions of A
+   
+   epsilonfirst = eigenvals[0]   #gets the first and last eigenvalues to calculate phi0 and phiN
+   epsilonlast = eigenvals[-1]
+   
+   phi0row = np.zeros(20 * L -1)   #creates the row vectors that will hold all of the phi0 and phiN values
+   phiNrow = np.zeros(20 * L -1)
+   
+   for i in range(20 * L -1):   #calculates phi0 and phiN values and adds them to their row vectors
+      col = eigenfuncs[:, i]
+      
+      phi0 = ((4 * col[0]) - col[1]) / ((2 * dx * np.sqrt(K * (L**2) - epsilonfirst)) + 3)
+      phiN = (((-4) * col[-1]) + col[-2]) / (((-2) * dx * np.sqrt(K * (L**2) - epsilonlast)) - 3)
+      
+      phi0row[i] = phi0
+      phiNrow[i] = phiN
+      
+   solfuncs = np.zeros((20 * L + 1, 20 * L - 1))   #creates a new array that will hold the final eigenfunctions with the boundary values
+      
+   for j in range(20 * L + 1):   #assembles the final eigenfunctions with their boundary values included
+      if j == 0:
+         solfuncs[0, :] = phi0row
+      elif j == (20 * L):
+         solfuncs[-1, :] = phiNrow
+      else:
+         solfuncs[j, :] = eigenfuncs[j-1, :]
+      
+   return eigenvals, solfuncs   #returns the eigenvalues of the matrix and the eigenfunctions with their boundary values added
    
 eigenstuff = direct_method(L, K)  #call the function to get the eigenvalues and eigenfunctions
 
-xlist = np.linspace(-4, 4, 20 * L - 1)
+xlist = np.linspace(-4, 4, 20 * L + 1)
    
 for i in range(5):   #plot the first five eigenfunctions
    norm = np.sqrt(np.trapz(np.multiply(eigenstuff[1][:, i], eigenstuff[1][:, i]), xlist))
@@ -105,4 +132,19 @@ xspan = np.linspace(-L, L, 20 * L + 1)
 y0 = np.array([1, 1])   #define initial condition
 
 def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):
+   epsilon_start = 0
+   eigenvalues = np.zeros(2)
+   eigenfunctions = np.zeros(2, 20 * L + 1)
    
+   for modes in range(2):   #for loop over two modes
+      epsilon = epsilon_start
+      depsilon = 1
+      
+      for j in range(1000):   #for loop for shooting
+         
+         xevals = np.linspace(-L, L, 20 * L + 1)    #solves the ODE
+         sol = scipy.integrate.solve_ivp(lambda x, phi: rhsfunc3(x, phi, K, epsilon, gamma), xspan, y0, t_eval=xevals)
+         y_sol = sol.y[0, :]
+         
+         norm = np.sqrt(np.trapz(np.multiply(y_sol, y_sol), sol.t))   #compute norm
+         
