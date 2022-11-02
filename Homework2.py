@@ -1,8 +1,6 @@
 import numpy as np
 import scipy.integrate
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
-from matplotlib import cm
 
 def rhsfunc(x, phi, K, epsilon):   #define ODE
    f1 = phi[1]
