@@ -124,13 +124,13 @@ for i in range(5):   #plot the first five eigenfunctions
       plt.plot(xlist, (-1) * soldirect[i], linewidth=3)
 plt.show()'''
 
-A7 = np.transpose(np.abs(soldirect[0]))
-A8 = np.transpose(np.abs(soldirect[1]))
-A9 = np.transpose(np.abs(soldirect[2]))
-A10 = np.transpose(np.abs(soldirect[3]))
-A11 = np.transpose(np.abs(soldirect[4]))
+A7 = np.transpose(np.array([np.abs(soldirect[0])]))
+A8 = np.transpose(np.array([np.abs(soldirect[1])]))
+A9 = np.transpose(np.array([np.abs(soldirect[2])]))
+A10 = np.transpose(np.array([np.abs(soldirect[3])]))
+A11 = np.transpose(np.array([np.abs(soldirect[4])]))
 
-A12 = eigenstuff[0][61:66]
+A12 = np.array([eigenstuff[0][61:66]])
 
 def rhsfunc3(x, phi, K, epsilon, gamma):   #define ODE
    f1 = phi[1]
@@ -161,10 +161,11 @@ def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):
          sol = scipy.integrate.solve_ivp(lambda x, phi: rhsfunc3(x, phi, K, epsilon, gamma), xspan, y0, t_eval=xevals)   #solves the ODE
          y_sol = sol.y[0, :]
          
-         norm = np.sqrt(np.trapz(np.multiply(y_sol, y_sol), sol.t))   #compute norm
+         norm = np.trapz(np.multiply(y_sol, y_sol), sol.t)   #compute norm
          BC = y_sol[-1]   #compute boundary condition
+         func = y_sol / norm
          
-         if np.abs(norm - 1) < 10 ** (-5) and np.abs(BC - A) < 10 ** (-5):   #if norm and boundary condition met
+         if np.abs(np.trapz(np.multiply(func, func), sol.t) - 1) < 10 ** (-5) and np.abs(BC - A) < 10 ** (-5):   #if norm and boundary condition met
             eigenvalues[modes] = epsilon
             break
          else:   #change A
@@ -176,8 +177,9 @@ def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):
          
          norm = np.sqrt(np.trapz(np.multiply(y_sol, y_sol), sol.t))   #compute norm
          BC = y_sol[-1]
+         func = y_sol / norm
          
-         if np.abs(norm - 1) < 10 ** (-5) and np.abs(BC - A) < 10 ** (-5):
+         if np.abs(np.trapz(np.multiply(func, func), sol.t) - 1) < 10 ** (-5) and np.abs(BC - A) < 10 ** (-5):
             eigenvalues[modes] = epsilon
             break
          else:   #change epsilon
@@ -187,18 +189,31 @@ def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):
                epsilon = epsilon - (depsilon / 2)
                depsilon = depsilon / 2
       
-      norm = np.sqrt(np.trapz(np.multiply(y_sol, y_sol), sol.t))
-      func = y_sol / norm
       eigenfunctions[modes] = func
-      plt.plot(sol.t, func)
+      #plt.plot(sol.t, func)
                
       epsilon_start = epsilon + 0.1
       
    return eigenvalues, eigenfunctions
 
-solshoot3 = shooting_method3(L, K, xspan, y0, gamma, rhsfunc3)
+sol1shoot3 = shooting_method3(L, K, xspan, y0, gamma, rhsfunc3)
+#plt.show()
 
-#problems: the loop is not breaking and giving the eigenvalues and when gamma = -0.05 we have two eigenfunctions with the same number of peaks and troughs
+A13 = np.transpose(np.array([sol1shoot3[1][0]]))
+A14 = np.transpose(np.array([sol1shoot3[1][1]]))
 
-print(solshoot3[0])
-plt.show()
+A15 = np.array([sol1shoot3[0]])
+
+# Problems: 
+# the loop is not breaking due to the norm not being equal to 1
+# when gamma = -0.05 we have two eigenfunctions with the same number of nodes
+# are these the same problem?
+
+gamma = -0.05
+sol2shoot3 = shooting_method3(L, K, xspan, y0, gamma, rhsfunc3)
+#plt.show()
+
+A16 = np.transpose(np.array([sol2shoot3[1][0]]))
+A17 = np.transpose(np.array([sol2shoot3[1][1]]))
+
+A18 = np.array([sol2shoot3[0]])
