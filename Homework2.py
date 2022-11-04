@@ -82,18 +82,19 @@ def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
    
    tempeigenvals, tempeigenfuncs = np.linalg.eig(A)   #obtain the eigenvectors and eigenfuntions of A
    
-   tempeigenvals = tempeigenvals * (1 / (dx ** 2))
+   tempeigenvals = tempeigenvals * (1 / (dx ** 2))   #scale the eigenvalues by 1/dx**2
    
-   indexlist = np.argsort(tempeigenvals)
-   eigenvals = np.zeros(5)
+   indexlist = np.argsort(tempeigenvals)   #get the indices of the smallest eigenvalues
+   
+   eigenvals = np.zeros(5)   #initialize arrays for the eigenvalues and eigenvectors
    eigenfuncs = np.zeros((5, 79))
    
-   for i in range(5):
+   for i in range(5):   #create the arrays for the five smallest eigenvalues and their corresponding eigenfunctions
       index = indexlist[i]
       eigenvals[i] = tempeigenvals[index]
       eigenfuncs[i] = tempeigenfuncs[:, index]
       
-   eigenfuncs = np.transpose(eigenfuncs)
+   eigenfuncs = np.transpose(eigenfuncs)   #transpose the eigenfunction array so that each column will be an eigenfunction
    
    phi0row = np.zeros(5)   #creates the row vectors that will hold all of the phi0 and phiN values
    phiNrow = np.zeros(5)
@@ -192,7 +193,7 @@ def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):   #returns the eigenvalu
                depsilon = depsilon / 2
       
       eigenfunctions[modes] = y_sol   #adds the normalized eigenfunction to the array of solutions
-      plt.plot(sol.t, y_sol)   #plots the normalized eigenfunction
+      plt.plot(sol.t, y_sol, linewidth=3)   #plots the normalized eigenfunction
                
       epsilon_start = epsilon + 0.1   #incriments the starting epsilon value to move on to the next eigenvalue
       
@@ -221,14 +222,3 @@ A16 = np.transpose(np.array([np.abs(sol2shoot3[1][0])]))   #formats the solution
 A17 = np.transpose(np.array([np.abs(sol2shoot3[1][1])]))
 
 A18 = np.array([sol2shoot3[0]])
-
-# Problem 2 Issues:
-# -what is causing my eigenvalues to not be correct? (eigenvectors are also incorrect)
-# - why does the plot of my eigenfunctions seem like the initial conditions do not match the 'smoothness' of the rest of the function?
-# Problem 3 Issues:
-# -when gamma is -0.05, the plot of my eigenfunctions looks very strange
-# -did I update the initial condition correctly?
-# -check overall implementation
-
-print(A6)
-print(A12)
