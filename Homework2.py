@@ -57,7 +57,7 @@ y0 = np.array([1, np.sqrt(K * (L**2))])   #define initial condition
 solshoot = shooting_method(L, K, xspan, y0, rhsfunc)   #call function
 plt.show()   #shows the plot of the eigefunctions
 
-A1 = np.transpose(np.array([solshoot[1][0, :]]))   #formats each eigenfunction into a column vector
+A1 = np.transpose(np.array([solshoot[1][0, :]]))   #formats the solutions and assigns them to the deliverable variables
 A2 = np.transpose(np.array([solshoot[1][1, :]]))
 A3 = np.transpose(np.array([solshoot[1][2, :]]))
 A4 = np.transpose(np.array([solshoot[1][3, :]]))
@@ -66,11 +66,11 @@ A5 = np.transpose(np.array([solshoot[1][4, :]]))
 A6 = solshoot[0]
 
 def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
-   dx = (L * 2) / (20 * L + 1)   #calculate dx
+   dx = (L * 2) / (20 * L)   #calculate dx
    center_diag = np.zeros(20 * L - 1)   #define arrays for the center diagonal and the offset diagonals
    offset_diag = np.ones(20 * L - 2) * (-1)    #inputs the correct values for the offset diagonals
    
-   for i in range(20 * L - 1):   #inputs the correct values for the center diagonal
+   for i in range(20 * L - 1):   #inputs the correct values for x in the equation for the center diagonal
       center_diag[i] = 2 + K * ((-L + (i+1) * dx) ** 2) * (dx ** 2)
    
    A = np.diag(offset_diag, -1) + np.diag(offset_diag, 1) + np.diag(center_diag, 0)   #create the matrix A
@@ -82,14 +82,13 @@ def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
    
    eigenvals, eigenfuncs = np.linalg.eig(A)   #obtain the eigenvectors and eigenfuntions of A
    
+   eigenvals = eigenvals[61:66] * (1 / (dx ** 2))   #slices the eigenvalue solutions for the values we want
+   eigenfuncs = eigenfuncs[:, 61:66]   #slices the eigenfunction solutions to get only the five functions we want
+   
    phi0row = np.zeros(5)   #creates the row vectors that will hold all of the phi0 and phiN values
    phiNrow = np.zeros(5)
    
-   eigenvals = eigenvals[61:66] * (1 / (dx ** 2))
-   
-   eigenfuncs = eigenfuncs[:, 61:66]
-   
-   for i in range(5):   #calculates phi0 and phiN values and adds them to their row vectors
+   for i in range(5):   #calculates phi0 and phiN values and creates vectors to hold them
       col = eigenfuncs[:, i]
       epsilon = eigenvals[i]
       
@@ -99,7 +98,7 @@ def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
       phi0row[i] = phi0
       phiNrow[i] = phiN
       
-   solfuncs = np.zeros((20 * L + 1, 5))   #creates a new array that will hold the final eigenfunctions with the boundary values
+   solfuncs = np.zeros((20 * L + 1, 5))   #creates a new array that will hold the final eigenfunctions with the boundary values added
       
    for j in range(20 * L + 1):   #assembles the final eigenfunctions with their boundary values included
       if j == 0:
@@ -114,18 +113,18 @@ def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
 eigenstuff = direct_method(L, K)  #call the function to get the eigenvalues and eigenfunctions
 
 xlist = np.linspace(-4, 4, 20 * L + 1)
-soldirect = np.zeros((5, 81))
+soldirect = np.zeros((5, 81))   #creates the array that will hold the normalized eigenfunctions
    
-for i in range(5):   #plot the first five eigenfunctions
+for i in range(5):   #normalize the eigenfunctions and adds them to the soldirect array. Also plots the first five eigenfunctions
    norm = np.sqrt(np.trapz(np.multiply(eigenstuff[1][:, i], eigenstuff[1][:, i]), xlist))
    soldirect[i] = eigenstuff[1][:, i] / norm
-   if i % 2 == 0:
-      plt.plot(xlist, soldirect[i], linewidth=3)
-   else:
+   if i > 1:
       plt.plot(xlist, (-1) * soldirect[i], linewidth=3)
+   else:
+      plt.plot(xlist, soldirect[i], linewidth=3)
 plt.show()
 
-A7 = np.transpose(np.array([np.abs(soldirect[0])]))
+A7 = np.transpose(np.array([np.abs(soldirect[0])]))   #formats the solutions and assigns them to the deliverable variables
 A8 = np.transpose(np.array([np.abs(soldirect[1])]))
 A9 = np.transpose(np.array([np.abs(soldirect[2])]))
 A10 = np.transpose(np.array([np.abs(soldirect[3])]))
@@ -138,97 +137,88 @@ def rhsfunc3(x, phi, K, epsilon, gamma):   #define ODE
    f2 = ((gamma * (np.abs(phi[0]) ** 2)) + (K * (x ** 2)) - epsilon) * phi[0]
    return np.array([f1, f2])
 
-def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):
-   epsilon_start = 0
+def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):   #returns the eigenvalues and eigenfunctions for the ODE
+   epsilon_start = 0   #initialize starting variables and arrays that will hold the eigenvalues and eigenfunctions
    eigenvalues = np.zeros(2)
    eigenfunctions = np.zeros((2, 20 * L + 1))
    xevals = np.linspace(-L, L, 20 * L + 1)
-   A = y0[1]
+   A = 0.001   #define A value
    
    for modes in range(2):   #for loop over two modes
       epsilon = epsilon_start
       depsilon = 0.5
       
       for j in range(1000):   #for loop for shooting
-         y0[1] = np.sqrt(K * (L**2) - epsilon) * A   #update initial condition
+         y0[0] = A   #update initial condition
+         y0[1] = np.sqrt(K * (L**2) - epsilon) * A
          sol = scipy.integrate.solve_ivp(lambda x, phi: rhsfunc3(x, phi, K, epsilon, gamma), xspan, y0, t_eval=xevals)   #solves the ODE
-         y_sol = sol.y[0, :]
+         y_sol = sol.y[0, :]   #gets the y values for the solution
          
          norm = np.trapz(np.multiply(y_sol, y_sol), sol.t)   #compute norm
          BC = -np.sqrt(K * (L**2) - epsilon) * y_sol[-1]   #compute boundary condition
-         func = y_sol / np.sqrt(norm)
          
-         if np.abs(np.sqrt(np.trapz(np.multiply(func, func), sol.t)) - 1) < 10 ** (-5) and np.abs(BC - sol.y[1, -1]) < 10 ** (-5):   #if norm and boundary condition met
-            eigenvalues[modes] = epsilon
+         if np.abs(np.trapz(np.multiply(y_sol, y_sol), sol.t) - 1) < 10 ** (-5) and np.abs(BC - sol.y[1, -1]) < 10 ** (-5):   #if norm and boundary condition met
+            eigenvalues[modes] = epsilon   #adds epsilon to the array of eigenvalues
             break
          else:   #change A
             A = A / np.sqrt(norm)
          
+         y0[0] = A   #update initial condition
          y0[1] = np.sqrt(K * (L**2) - epsilon) * A
          sol = scipy.integrate.solve_ivp(lambda x, phi: rhsfunc3(x, phi, K, epsilon, gamma), xspan, y0, t_eval=xevals)   #sovle ODE
-         y_sol = sol.y[0, :]
+         y_sol = sol.y[0, :]   #gets the y values for the solution
          
          norm = np.trapz(np.multiply(y_sol, y_sol), sol.t)   #compute norm
-         BC = -np.sqrt(K * (L**2) - epsilon) * y_sol[-1]
-         func = y_sol / np.sqrt(norm)
+         BC = -np.sqrt(K * (L**2) - epsilon) * y_sol[-1]   #compute boundary condition
          
-         if np.abs(np.trapz(np.multiply(func, func), sol.t) - 1) < 10 ** (-5) and np.abs(BC - sol.y[1, -1]) < 10 ** (-5):
-            eigenvalues[modes] = epsilon
+         if np.abs(np.trapz(np.multiply(y_sol, y_sol), sol.t) - 1) < 10 ** (-5) and np.abs(BC - sol.y[1, -1]) < 10 ** (-5):
+            eigenvalues[modes] = epsilon   #adds epsilon to the array of eigenvalues
             break
-         else:   #change epsilon
-            if (-1)**(modes)*(np.sqrt(K * (L**2) - epsilon) * y_sol[-1] + sol.y[1, -1]) > 0:   #bisection method
+         else:   #change epsilon according to the bisection method
+            if (-1)**(modes)*(np.sqrt(K * (L**2) - epsilon) * y_sol[-1] + sol.y[1, -1]) > 0:
                epsilon = depsilon + epsilon
             else:
                epsilon = epsilon - (depsilon / 2)
                depsilon = depsilon / 2
       
-      eigenfunctions[modes] = func
-      plt.plot(sol.t, func)
+      eigenfunctions[modes] = y_sol   #adds the normalized eigenfunction to the array of solutions
+      plt.plot(sol.t, y_sol)   #plots the normalized eigenfunction
                
-      epsilon_start = epsilon + 0.1
+      epsilon_start = epsilon + 0.1   #incriments the starting epsilon value to move on to the next eigenvalue
       
-   return eigenvalues, eigenfunctions
+   return eigenvalues, eigenfunctions   #returns the eigenvalues and normalized eigenfunctions
 
 L = 3   #define constants
 K = 1
 gamma = 0.05
 xspan = [-L, L]
-A = 0.001
 
-y0 = np.array([1, A])   #define initial condition
+y0 = np.array([0.001, np.sqrt(K * (L**2)) * 0.001])   #define initial condition
 
 sol1shoot3 = shooting_method3(L, K, xspan, y0, gamma, rhsfunc3)   #call function
 plt.show()
 
-A13 = np.transpose(np.array([np.abs(sol1shoot3[1][0])]))
+A13 = np.transpose(np.array([np.abs(sol1shoot3[1][0])]))   #formats the solutions and assigns them to the deliverable variables
 A14 = np.transpose(np.array([np.abs(sol1shoot3[1][1])]))
 
 A15 = np.array([sol1shoot3[0]])
 
-gamma = -0.05
+gamma = -0.05   #changes gamma to -0.05
 sol2shoot3 = shooting_method3(L, K, xspan, y0, gamma, rhsfunc3)   #call function
 plt.show()
 
-A16 = np.transpose(np.array([np.abs(sol2shoot3[1][0])]))
+A16 = np.transpose(np.array([np.abs(sol2shoot3[1][0])]))   #formats the solutions and assigns them to the deliverable variables
 A17 = np.transpose(np.array([np.abs(sol2shoot3[1][1])]))
 
 A18 = np.array([sol2shoot3[0]])
 
-# Problem 1 Issues:
-# -did I update the initial condition correctly?
-# -how do you get the value of the derivative of phi at x = L? (to determine whether it is within the desired tolerance)
-# -I submitted problem 1 and the eigenvalues were all correct, and only A1 was correct
 # Problem 2 Issues:
 # -what is causing my eigenvalues to not be correct? (eigenvectors are also incorrect)
-# -check implementation
+# - why does the plot of my eigenfunctions seem like the initial conditions do not match the 'smoothness' of the rest of the function?
 # Problem 3 Issues:
-# -when gamma is -0.05, why do I have two eigenfunctions with the same number of nodes?
-# -how do I update the initial condition? (confused by the nonlinear term)
-# -check implementation
-# General Questions:
-# 
+# -when gamma is -0.05, the plot of my eigenfunctions looks very strange
+# -did I update the initial condition correctly?
+# -check overall implementation
 
 print(A6)
 print(A12)
-print(A15)
-print(A18)
