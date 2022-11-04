@@ -80,10 +80,20 @@ def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
    A[0, 1] = ((-2) / 3)   #edit the other values that were affected by using the forward and backward difference schemes
    A[-1, -2] = ((-2) / 3)
    
-   eigenvals, eigenfuncs = np.linalg.eig(A)   #obtain the eigenvectors and eigenfuntions of A
+   tempeigenvals, tempeigenfuncs = np.linalg.eig(A)   #obtain the eigenvectors and eigenfuntions of A
    
-   eigenvals = eigenvals[61:66] * (1 / (dx ** 2))   #slices the eigenvalue solutions for the values we want
-   eigenfuncs = eigenfuncs[:, 61:66]   #slices the eigenfunction solutions to get only the five functions we want
+   tempeigenvals = tempeigenvals * (1 / (dx ** 2))
+   
+   indexlist = np.argsort(tempeigenvals)
+   eigenvals = np.zeros(5)
+   eigenfuncs = np.zeros((5, 79))
+   
+   for i in range(5):
+      index = indexlist[i]
+      eigenvals[i] = tempeigenvals[index]
+      eigenfuncs[i] = tempeigenfuncs[:, index]
+      
+   eigenfuncs = np.transpose(eigenfuncs)
    
    phi0row = np.zeros(5)   #creates the row vectors that will hold all of the phi0 and phiN values
    phiNrow = np.zeros(5)
