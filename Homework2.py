@@ -40,7 +40,7 @@ def shooting_method(L, K, xspan, y0, rhsfunc):  #returns the eigenvalues and the
 
       norm = np.sqrt(np.trapz(np.multiply(y_sol, y_sol), sol.t))    #calculates the norm of phi
       func = y_sol / norm
-      plt.plot(sol.t, func, linewidth=3)   #plots the normalized eigenfunction
+      #plt.plot(sol.t, func, linewidth=3)   #plots the normalized eigenfunction
       
       eigenfunctions[modes] = np.abs(func)   #creates the array of the absolute value of the eigenfunctions
 
@@ -55,7 +55,7 @@ xspan = [-L, L]
 y0 = np.array([1, np.sqrt(K * (L**2))])   #define initial condition
 
 solshoot = shooting_method(L, K, xspan, y0, rhsfunc)   #call function
-plt.show()   #shows the plot of the eigefunctions
+#plt.show()   #shows the plot of the eigefunctions
 
 A1 = np.transpose(np.array([solshoot[1][0, :]]))   #formats the solutions and assigns them to the deliverable variables
 A2 = np.transpose(np.array([solshoot[1][1, :]]))
@@ -64,6 +64,30 @@ A4 = np.transpose(np.array([solshoot[1][3, :]]))
 A5 = np.transpose(np.array([solshoot[1][4, :]]))
 
 A6 = solshoot[0]
+
+# ------Presentation Problem------ #
+from mpl_toolkits import mplot3d
+from matplotlib import cm
+
+x = np.linspace(-L, L, 20 * L + 1)
+t = np.array([np.linspace(0, 5, 100)])
+
+phi2 = np.array([solshoot[1][1]]).T
+E2 = solshoot[0][0, 1]
+
+psi2 = np.outer(phi2, np.cos((E2 / 2) * t))
+
+fig1 = plt.figure()
+ax1 = plt.axes(projection = '3d')
+X, T = np.meshgrid(x, t)
+
+ax1.plot_surface(X, T, psi2.T.real, cmap = cm.hsv)
+ax1.set_xlabel('x axis')
+ax1.set_ylabel('t axis')
+ax1.set_zlabel('$\phi_2(x,t)$')
+ax1.set_title('Time Evolution of the Second Mode')
+plt.show()
+# ------Presentation Problem------ #
 
 def direct_method(L, K):   #returns the desired eigenvalues and eigenfunctions
    dx = (L * 2) / (20 * L)   #calculate dx
@@ -129,11 +153,11 @@ soldirect = np.zeros((5, 81))   #creates the array that will hold the normalized
 for i in range(5):   #normalize the eigenfunctions and adds them to the soldirect array. Also plots the first five eigenfunctions
    norm = np.sqrt(np.trapz(np.multiply(eigenstuff[1][:, i], eigenstuff[1][:, i]), xlist))
    soldirect[i] = eigenstuff[1][:, i] / norm
-   if i > 1:
-      plt.plot(xlist, (-1) * soldirect[i], linewidth=3)
-   else:
-      plt.plot(xlist, soldirect[i], linewidth=3)
-plt.show()
+   #if i > 1:
+      #plt.plot(xlist, (-1) * soldirect[i], linewidth=3)
+   #else:
+      #plt.plot(xlist, soldirect[i], linewidth=3)
+#plt.show()
 
 A7 = np.transpose(np.array([np.abs(soldirect[0])]))   #formats the solutions and assigns them to the deliverable variables
 A8 = np.transpose(np.array([np.abs(soldirect[1])]))
@@ -193,7 +217,7 @@ def shooting_method3(L, K, xspan, y0, gamma, rhsfunc3):   #returns the eigenvalu
                depsilon = depsilon / 2
       
       eigenfunctions[modes] = y_sol   #adds the normalized eigenfunction to the array of solutions
-      plt.plot(sol.t, y_sol, linewidth=3)   #plots the normalized eigenfunction
+      #plt.plot(sol.t, y_sol, linewidth=3)   #plots the normalized eigenfunction
                
       epsilon_start = epsilon + 0.1   #incriments the starting epsilon value to move on to the next eigenvalue
       
@@ -207,7 +231,7 @@ xspan = [-L, L]
 y0 = np.array([0.001, np.sqrt(K * (L**2)) * 0.001])   #define initial condition
 
 sol1shoot3 = shooting_method3(L, K, xspan, y0, gamma, rhsfunc3)   #call function
-plt.show()
+#plt.show()
 
 A13 = np.transpose(np.array([np.abs(sol1shoot3[1][0])]))   #formats the solutions and assigns them to the deliverable variables
 A14 = np.transpose(np.array([np.abs(sol1shoot3[1][1])]))
